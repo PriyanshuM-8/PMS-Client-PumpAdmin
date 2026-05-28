@@ -50,6 +50,7 @@ export default function Login() {
         identifier: email.trim(),
         otp,
         method: "email",
+        requestedRole: "pumpAdmin",
       });
       login(data.token, data.user);
     } catch (err) {

@@ -22,6 +22,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [testOtp, setTestOtp] = useState("");
 
   const handleLogin = async () => {
     if (!email || !password) return setError("Email and password are required");
@@ -29,7 +30,8 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      await api.post("/auth/login/pump", { email: email.trim(), password });
+      const { data } = await api.post("/auth/login/pump", { email: email.trim(), password });
+      if (data.devOtp) setTestOtp(data.devOtp);
       setStep("otp");
     } catch (err) {
       setError(err.response?.data?.message || "Invalid email or password");
@@ -63,7 +65,8 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      await api.post("/auth/forgot-password", { email: forgotEmail.trim() });
+      const { data } = await api.post("/auth/forgot-password", { email: forgotEmail.trim() });
+      if (data.devOtp) setTestOtp(data.devOtp);
       setStep("forgot-otp");
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");
@@ -173,6 +176,18 @@ export default function Login() {
                 <p className="text-green-600 text-xs font-semibold">OTP sent to {email}</p>
                 <p className="text-green-500 text-[10px] mt-0.5">Valid for 10 minutes</p>
               </div>
+              
+              {testOtp && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3 text-center shadow-sm">
+                  <div className="flex items-center justify-center gap-1.5 mb-1">
+                    <i className="ri-flask-line text-yellow-600"></i>
+                    <p className="text-yellow-700 text-xs font-bold">Test OTP</p>
+                  </div>
+                  <p className="text-yellow-900 text-lg font-black mt-2 tracking-[0.3em]">{testOtp}</p>
+                  <p className="text-yellow-600/70 text-[10px] mt-1 font-medium leading-tight">Use this OTP to login directly<br/>(Render free tier blocks emails)</p>
+                </div>
+              )}
+
               <div>
                 <label className="text-gray-600 text-xs font-semibold mb-1 block">Enter OTP</label>
                 <input
@@ -235,6 +250,18 @@ export default function Login() {
                 <p className="text-green-600 text-xs font-semibold">OTP sent to {forgotEmail}</p>
                 <p className="text-green-500 text-[10px] mt-0.5">Valid for 10 minutes</p>
               </div>
+
+              {testOtp && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3 text-center shadow-sm">
+                  <div className="flex items-center justify-center gap-1.5 mb-1">
+                    <i className="ri-flask-line text-yellow-600"></i>
+                    <p className="text-yellow-700 text-xs font-bold">Test OTP</p>
+                  </div>
+                  <p className="text-yellow-900 text-lg font-black mt-2 tracking-[0.3em]">{testOtp}</p>
+                  <p className="text-yellow-600/70 text-[10px] mt-1 font-medium leading-tight">Use this OTP to reset directly<br/>(Render free tier blocks emails)</p>
+                </div>
+              )}
+
               <div>
                 <label className="text-gray-600 text-xs font-semibold mb-1 block">Enter OTP</label>
                 <input

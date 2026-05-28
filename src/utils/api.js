@@ -1,6 +1,8 @@
 import axios from 'axios'
 
-const api = axios.create({ baseURL: import.meta.env.VITE_API_URL || '/api' })
+const API_URL = import.meta.env.VITE_API_URL || '/api'
+console.log("Current API URL:", API_URL)
+const api = axios.create({ baseURL: API_URL })
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('pump_token')

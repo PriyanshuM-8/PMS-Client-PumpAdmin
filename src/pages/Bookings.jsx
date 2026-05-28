@@ -33,9 +33,9 @@ export default function Bookings() {
   const [acceptSheet, setAcceptSheet] = useState(null);
   const [completeSheet, setCompleteSheet] = useState(null);
   const [eta, setEta] = useState(15);
-  const [otp, setOtp] = useState("");
   const [workDetails, setWorkDetails] = useState({ description: "", labourCharge: "", partsChanged: [] });
   const [completing, setCompleting] = useState(false);
+  const [mechanicBillSheet, setMechanicBillSheet] = useState(null);
 
   const fetchBookings = useCallback(async () => {
     setLoading(true);
@@ -69,7 +69,6 @@ export default function Bookings() {
       socket.off("booking_cancelled");
 
       socket.on("new_booking", (data) => {
-        // Real-time new booking — list mein turant add karo
         fetchBookings();
         Swal.fire({
           toast: true,
@@ -91,10 +90,8 @@ export default function Bookings() {
       });
     };
 
-    // Immediately try to attach
     attachSocketListeners();
 
-    // Poll every 1s for up to 5s in case socket connects after render
     let attempts = 0;
     const interval = setInterval(() => {
       const socket = getSocket();
@@ -185,8 +182,6 @@ export default function Bookings() {
     }
   };
 
-
-
   const handleReached = async (id) => {
     try {
       await api.patch(`/bookings/pump/${id}/reached`);
@@ -207,21 +202,22 @@ export default function Bookings() {
     }
   };
 
-  const openComplete = (booking) => {
-    setOtp("");
+  const handleCompleteClick = (b) => {
     setWorkDetails({ description: "", labourCharge: "", partsChanged: [] });
-    setCompleteSheet(booking);
+    setCompleteSheet(b);
   };
 
-  const handleComplete = async () => {
-    if (otp.length !== 6) return Swal.fire({ icon: "warning", title: "Enter valid 6-digit OTP" });
+  const submitCompleteJob = async (details = null) => {
+    if (completing) return;
     setCompleting(true);
     try {
-      const details = completeSheet.serviceType === "mechanic"
+      const finalDetails = details || (completeSheet.serviceType === "mechanic"
         ? { description: workDetails.description, labourCharge: parseFloat(workDetails.labourCharge) || 0 }
-        : undefined;
-      const res = await api.patch(`/bookings/pump/${completeSheet._id}/complete`, { otp, workDetails: details });
+        : undefined);
+      
+      const res = await api.patch(`/bookings/pump/${completeSheet._id}/complete`, { workDetails: finalDetails });
       setCompleteSheet(null);
+      setMechanicBillSheet(null);
       fetchBookings();
       
       const trialMsg = res.data?.data?.trialMessage;
@@ -246,7 +242,6 @@ export default function Bookings() {
         <p className="text-gray-400 text-xs mt-0.5">{bookings.length} bookings</p>
       </div>
 
-      {/* Filters */}
       <div className="flex gap-1.5 overflow-x-auto pb-1">
         {filters.map((f) => (
           <button key={f} onClick={() => setFilter(f)}
@@ -330,7 +325,6 @@ export default function Bookings() {
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="flex gap-2 mt-3 pt-3 border-t border-gray-50">
                 {b.status === "pending" && (
                   <>
@@ -363,7 +357,7 @@ export default function Bookings() {
                   </button>
                 )}
                 {(b.status === "in_progress" && b.serviceType === "mechanic") || b.status === "payment_pending" ? (
-                  <button onClick={() => openComplete(b)}
+                  <button onClick={() => handleCompleteClick(b)}
                     className="flex-1 py-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-400 text-white font-bold text-[10px] shadow-sm flex items-center justify-center gap-1.5">
                     <FaCheckCircle className="text-xs" /> Complete Job
                   </button>
@@ -374,7 +368,6 @@ export default function Bookings() {
         </div>
       )}
 
-      {/* Accept Sheet */}
       {acceptSheet && (
         <Sheet onClose={() => setAcceptSheet(null)}>
           <h3 className="text-gray-900 font-black text-sm mb-1">Accept Booking</h3>
@@ -418,7 +411,6 @@ export default function Bookings() {
         </Sheet>
       )}
 
-      {/* Assign Delivery Boy Sheet */}
       {assignSheet && (
         <Sheet onClose={() => setAssignSheet(null)}>
           <h3 className="text-gray-900 font-black text-sm mb-1">Assign Delivery Boy</h3>
@@ -460,13 +452,10 @@ export default function Bookings() {
         </Sheet>
       )}
 
-
-
-      {/* Complete Job Sheet */}
       {completeSheet && (
         <Sheet onClose={() => setCompleteSheet(null)}>
           <h3 className="text-gray-900 font-black text-sm mb-1">Complete Job</h3>
-          <p className="text-gray-400 text-[10px] mb-4">Enter the OTP shared by the customer to verify completion</p>
+          <p className="text-gray-400 text-[10px] mb-4">Confirm completion of this service</p>
 
           <div className="bg-gray-50 rounded-xl p-3 mb-4">
             <div className="flex items-center gap-2 mb-1">
@@ -484,13 +473,6 @@ export default function Bookings() {
               </p>
             </div>
           </div>
-
-          <p className="text-gray-500 text-[10px] font-semibold mb-2 uppercase tracking-wider">Customer OTP</p>
-          <input
-            value={otp} maxLength={6} placeholder="6-digit OTP"
-            className="w-full bg-gray-50 border border-gray-100 rounded-xl px-3.5 py-3 text-center tracking-[0.4em] text-sm font-bold focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition mb-4"
-            onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-          />
 
           {completeSheet.serviceType === "mechanic" && (
             <>
@@ -511,12 +493,13 @@ export default function Bookings() {
             </>
           )}
 
-          <button type="button" onClick={handleComplete}
-            disabled={completing || otp.length !== 6}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-400 text-white font-bold text-xs shadow-md flex items-center justify-center gap-2 disabled:opacity-60">
-            {completing
-              ? <><IoMdSync className="animate-spin text-base" /> Completing...</>
-              : <><FaCheckCircle className="text-sm" /> Verify OTP & Complete</>}
+          <button
+            onClick={() => completeSheet.serviceType === "mechanic" ? setMechanicBillSheet(completeSheet) : submitCompleteJob()}
+            disabled={completing}
+            className="flex-1 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold text-xs rounded-xl shadow-md disabled:opacity-60 flex items-center justify-center gap-2"
+          >
+            {completing ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              : <><FaCheckCircle className="text-sm" /> Complete Job</>}
           </button>
         </Sheet>
       )}

@@ -15,7 +15,9 @@ export default function BookingAlertPopup() {
     try {
       const audio = new Audio('/sound/booking.wav')
       audio.loop = true
-      audio.play().catch(() => {})
+      audio.play().catch((err) => {
+        console.warn("Audio play blocked (likely browser autoplay policy):", err)
+      })
       audioRef.current = audio
     } catch {}
 

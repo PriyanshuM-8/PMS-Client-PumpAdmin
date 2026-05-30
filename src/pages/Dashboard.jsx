@@ -355,7 +355,6 @@ export default function Dashboard() {
               </p>
             </div>
           </div>
-
         </div>
       </div>
 
@@ -423,7 +422,7 @@ export default function Dashboard() {
                 <span className="text-white/50 text-sm">Not set</span>
               )}
             </p>
-            <p className="text-white/60 text-[9px] mt-0.5">per litre</p>                
+            <p className="text-white/60 text-[9px] mt-0.5">per litre</p>
           </div>
           <div className="bg-gray-800 rounded-xl p-3">
             <p className="text-white/70 text-[9px] uppercase tracking-widest font-semibold">

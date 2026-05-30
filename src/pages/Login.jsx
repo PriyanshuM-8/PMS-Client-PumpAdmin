@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../utils/api";
 import { useAuth } from "../context/AuthContext";
-import petrolPump from "/Images/gas-station.png";
+import petrolPump from "/Images/Logo.png";
 
 const inputCls =
   "w-full bg-gray-50 border border-gray-100 rounded-xl px-3.5 py-3 text-xs focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition";
@@ -115,9 +115,9 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center shadow-xl shadow-orange-200 mx-auto mb-3">
-            <img src={petrolPump} alt="petrol" className="h-10 w-10" />
+        <div className="text-center mb-4">
+          <div className="w-16 h-16 rounded-2xl  flex items-center justify-center mx-auto">
+            <img src={petrolPump} alt="petrol" className="h-10 w-15" />
           </div>
           <h1 className="text-gray-900 font-black text-xl">PumpAdmin</h1>
           <p className="text-gray-400 text-xs mt-1">Petrol Pump Management</p>

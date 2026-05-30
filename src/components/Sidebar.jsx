@@ -32,7 +32,7 @@ export default function Sidebar() {
       <div className="px-5 py-5 border-b border-gray-50">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-orange-200/60 flex-shrink-0 overflow-hidden">
+            <div className="w-12 h-9 rounded-xl  flex items-center justify-center  overflow-hidden">
               <img src={logo} alt="logo" className="w-full h-full object-contain" />
             </div>
             <div>
